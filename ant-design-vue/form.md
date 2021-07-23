@@ -37,3 +37,22 @@ const initDefaultProps = (propTypes, defaultProps) => {
 // 4. 劫持def 的代码在 @/components/_util/vue-types/utils.js 的 withDefault函数
 ```
 
+##  一些属性的说明
+
+$vnode.context 当前上下文作用域(我理解的是外层，调用组件的作用域，this)
+
+$vnode.VNodeData用来描述一个组件。
+
+```jsx
+// 例如一个 MyComponent
+<MyComponent @some-event="handler" prop-a="1" /> // 如果有指令下面也会显示指令的信息
+    
+// 对应的VNodeData
+{
+    on: {
+        'some-event': handler
+    },
+    propA: '1'
+}
+```
+

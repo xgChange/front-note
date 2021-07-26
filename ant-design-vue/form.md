@@ -1,8 +1,6 @@
 # AForm组件 (学习antdv源码的记录，v1.7.6, vue 2.x版) 
 
-##  
-
-### 一些utils
+## 一些utils
 
 def: 是指取该数据的默认值
 
@@ -54,5 +52,32 @@ $vnode.VNodeData用来描述一个组件。
     },
     propA: '1'
 }
+```
+
+## 为什么element-ui 是通过递归方式查找子、父组件，进行事件通信？
+
+**我暂时理解的是，因为element-ui是通过.vue文件写的，父组件无法在插槽上进行监听事件。***
+
+**而antd是用jsx写的，更加灵活，可以操作子组件的VNode。**
+
+```javascript
+// 例如 在antd的form组件中（非model双向绑定），而是通过v-decorator收集信息，在form-item阶段就对子VNode进行了v-model的绑定。
+on: {
+  blur: (...args) => {
+    originalBlur && originalBlur(...args);
+    this.onFieldBlur();
+  },
+  change: (...args) => {
+    if (Array.isArray(originalChange)) {
+      for (let i = 0, l = originalChange.length; i < l; i++) {
+        originalChange[i](...args);
+      }
+    } else if (originalChange) {
+      originalChange(...args);
+    }
+    this.onFieldChange();
+  },
+},
+// 将上面这个props传入到了子VNode中，这样就可以 类似于 对slot进行监听事件。 而在子组件中只要this.$emit就好了
 ```
 

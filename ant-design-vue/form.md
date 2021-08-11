@@ -61,7 +61,7 @@ $vnode.VNodeData用来描述一个组件。
 **而antd是用jsx写的，更加灵活，可以操作子组件的VNode。**
 
 ```javascript
-// 例如 在antd的form组件中（非model双向绑定），而是通过v-decorator收集信息，在form-item阶段就对子VNode进行了v-model的绑定。
+// 例如 在antd的form组件中（model双向绑定），在form-item阶段就对子VNode进行了v-model的绑定。
 on: {
   blur: (...args) => {
     originalBlur && originalBlur(...args);

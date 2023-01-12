@@ -79,6 +79,8 @@ let k: number = x // 报错，unknown 不能分配给 number
 
 ## 类型守卫 - 多态
 
+> 类型守卫主要是为了收缩类型，比如：isObject，就可以将类型缩小，而为 true 时，变量就变为 object 了，并且有类型提示
+
 ### 类型断言
 
 ```typescript
@@ -128,6 +130,17 @@ const parent: Parent = new Child() // Child实例可以赋值给 parent
 - 产生多态的条件：必须存在继承、必须有方法重写
 
 - 局限性：无法直接调用子类独有的方法，必须结合 instanceof 类型守卫来解决
+
+- 多态体现在：父类对象变量可以接受任何它的子类对象、接口类型对象变量可以接受任何他的实现类的对象
+
+```typescript
+interface List {}
+
+class MyList implements List {}
+class LinkedList implements List {}
+
+// 那么无论是 MyList类型还是LinkedList类型都可以赋值给 List
+```
 
 ### 抽象类(任何一个毫无意义的类都可以被定义为抽象类)
 
@@ -187,4 +200,91 @@ a[0] // 修改属性也会报错
 
 ```typescript
 const arr: [string, number, ...any[], number] = ['a', 1, 2, 'ddd', 55] // 前两个和最后一个是固定类型，中间的是任意类型
+```
+
+## 泛型
+
+### 为什么 object 不能替代类上的泛型
+
+- object 类型数据获取属性和方法时无自动提示
+
+  > tips: Object 和 object 类型区别：Object 代表所有类型的父类，是从 js 过来的。而 object 类型只能代表所有对象类型
+
+- 因为 object 只能接收 object 类型的变量，非 object 就不能接收了
+
+### 为什么 any 不能替代泛型
+
+- any 可以获取任何属性和方法，不会出现编译错误。而泛型如果被具体化某类型后，越界使用会报错。
+- any 无自动提示，泛型有
+
+### 泛型约束 (T extends object)
+
+```typescript
+// 表示具体话的类型必须是 object 类型，任何类的实例都符合 T extends object
+class Container<T extends object> {
+  //
+}
+
+T = any // 这个代表默认类型
+
+class ObjectRefImpl<T extends object, K extends keyof T> {} // 表示 T 是object类型，K限制为T的属性类型
+```
+
+- keyof
+
+```typescript
+class Container<T extends object> {
+  name: T
+  fn() {
+    return 12
+  }
+
+  static myFn() {
+    return 'myFn'
+  }
+
+  static staticName = 2
+}
+
+type MyKeys = keyof Container<object> // 获取实例、原型上的属性名字当作联合类型
+
+type StaticKeys = keyof typeof Container<object> // 获取静态方法、属性名字当作联合类型 + prototype
+
+// const a: MyKeys = ''
+
+const c = new Container()
+```
+
+### 构造函数类型
+
+> ts 不能直接new一个函数来创建实例，必须是 new 构造函数
+
+```typescript
+// 构造函数签名
+interface CommonConstructorFn<T, R extends any[]> {
+  new (...args: R): T
+}
+
+// 工厂函数，可以获取传入的构造函数类型和参数类型
+function generate<T, R extends any[]>(innerClass: CommonConstructorFn<T, R>, ...rest: R) {
+  return new innerClass(...rest)
+}
+
+// 使用
+class A {
+  constructor(private a: string){}
+  name: string = '1'
+}
+const obj = generate(A, '1')
+```
+
+## vue3上的泛型相关知识
+
+- [T] extends [Ref] ? T : Ref<UnwrapRef<T>> 为什么要用这个去判断
+
+```typescript
+// 这个重载类型，[T] extends [Ref]
+export function ref<T extends object>(
+  value: T
+): [T] extends [Ref] ? T : Ref<UnwrapRef<T>>
 ```

@@ -1,20 +1,16 @@
-type RemoveCallback<T extends any[]> = (
-  item: T[number],
-  index: number,
-  arr: T
-) => boolean
+type RemoveCallback<T> = (item: T, index: number, arr: T) => boolean
 
-class ArrayList<T extends any[]> {
-  constructor(private element: T) {}
+class ArrayList<T = any> {
+  constructor(private element: T[]) {}
 
   remove(num: number): number
-  remove(callback: RemoveCallback<T>): T
+  remove(callback: RemoveCallback<T>): T[]
   remove(value: any): any {
     if (typeof value === 'number') {
-      this.element = this.element.filter((item, index) => index !== value) as T
+      this.element = this.element.filter((item, index) => index !== value)
       return value
     }
-    return (this.element = this.element.filter(value) as T)
+    return (this.element = this.element.filter(value))
   }
 
   show() {
@@ -29,7 +25,7 @@ const arr = [
 
 const myList = new ArrayList(arr)
 
-// myList.remove((item) => item.age === 1)
-myList.remove(0)
+myList.remove((item) => item.age === 1)
+// myList.remove(0)
 
 console.log(myList.show())

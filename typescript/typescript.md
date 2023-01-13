@@ -257,7 +257,7 @@ const c = new Container()
 
 ### 构造函数类型
 
-> ts 不能直接new一个函数来创建实例，必须是 new 构造函数
+> ts 不能直接 new 一个函数来创建实例，必须是 new 构造函数
 
 ```typescript
 // 构造函数签名
@@ -266,19 +266,22 @@ interface CommonConstructorFn<T, R extends any[]> {
 }
 
 // 工厂函数，可以获取传入的构造函数类型和参数类型
-function generate<T, R extends any[]>(innerClass: CommonConstructorFn<T, R>, ...rest: R) {
+function generate<T, R extends any[]>(
+  innerClass: CommonConstructorFn<T, R>,
+  ...rest: R
+) {
   return new innerClass(...rest)
 }
 
 // 使用
 class A {
-  constructor(private a: string){}
+  constructor(private a: string) {}
   name: string = '1'
 }
 const obj = generate(A, '1')
 ```
 
-## vue3上的泛型相关知识
+## vue3 上的泛型相关知识
 
 - [T] extends [Ref] ? T : Ref<UnwrapRef<T>> 为什么要用这个去判断
 
@@ -288,3 +291,99 @@ export function ref<T extends object>(
   value: T
 ): [T] extends [Ref] ? T : Ref<UnwrapRef<T>>
 ```
+
+## 交叉类型
+
+> 多个类型合并【多个类属性和方法的并集】成的类型就是交叉类型
+
+```typescript
+type A1 = { name: string; age: number }
+type A2 = { name: string; fn: boolean }
+
+type Merge = A1 & A2
+
+const AA: Merge = {
+  name: '1',
+  age: 2,
+  fn: false,
+}
+```
+
+- 交叉类型和联合类型区别：
+
+> 交叉类型变量可以获取两个类型的任意属性和方法，而联合类型的变量只能获取两个类型的共同属性和方法
+
+```typescript
+type A1 = { name: string; age: number }
+type A2 = { name: number; fn: boolean }
+
+type Merge = A1 & A2
+
+// const AA: Merge = {
+//   name: '1',
+//   age: 2,
+//   fn: false
+// } // 全部都能获取到
+
+type All = A1 | A2
+const BB: A1 | A2 = {
+  age: 1,
+  name: '2',
+  fn: false,
+}
+
+BB.name // 只有BB.name
+```
+
+- 例子
+
+```typescript
+type MyObject = Record<string, any>
+function cross<T extends MyObject, P extends MyObject>(o1: T, o2: P): T & P {
+  const obj = {} as any
+
+  Object.keys(o1).forEach((key) => {
+    obj[key] = o1[key]
+  })
+
+  Object.keys(o2).forEach((key) => {
+    if (!o2.hasOwnProperty(key)) {
+      obj[key] = o2[key]
+    }
+  })
+
+  return obj as T & P
+}
+
+const obj1 = {
+  name: 'xmx',
+  age: 12,
+}
+
+const obj2 = {
+  fn() {
+    return 1
+  },
+  msg: 'This is message',
+}
+
+const mergeObj = cross(obj1, obj2)
+```
+
+- 泛型函数重载+交叉类型+类型断言 [MergeArrType](./generic-example/MergeArrType.ts)
+
+  > 函数接受多个 object 类型，并将他们属性合并，相同的属性不覆盖。
+
+  ```typescript
+  const obj1 = {
+    name: '1',
+    age: 1,
+  }
+
+  const obj2 = {
+    name: '2',
+    msg: 'This is message',
+  }
+
+  const mergeObj = merge(o1, o2) // {name: '1', age: 1, msg: 'This is message'}
+  ```

@@ -387,3 +387,64 @@ const mergeObj = cross(obj1, obj2)
 
   const mergeObj = merge(o1, o2) // {name: '1', age: 1, msg: 'This is message'}
   ```
+
+## infer
+
+### infer 出现的位置
+
+- extends 后的函数类型的参数类型位置
+- extends 后的函数类型的返回值类型上
+- 泛型具体化类型上
+
+```typescript
+// 泛型具体化类型
+const arr: [number, string, boolean] = [1, '2', false]
+
+type InferType<T> = T extends [...infer First, infer Second] ? Second : never
+
+const arr2: InferType<typeof arr> = false // InferType 是 boolean
+```
+
+### 构造函数类型
+
+```typescript
+type Constructor<T> = new (...args: any[]) => T
+```
+
+### infer 获取构造函数类型
+
+```typescript
+class A {
+  constructor(private name: string, private age: number) {}
+
+  getName() {
+    return this.name
+  }
+}
+
+type ConstructorParametersType<T> = T extends new (...args: infer Params) => any
+  ? Params
+  : never
+
+const AA: ConstructorParametersType<typeof A> // [string, number]
+```
+
+### infer 在工厂函数的应用
+
+```typescript
+class A {
+  constructor(private name: string, private age: number) {}
+
+  getName() {return this.name}
+}
+
+type CommonConstructor<T = any> = new (...args: any[]) => T
+
+type ConstructorParametersType<T extends CommonConstructor> = T extends new (...args: infer Params) => any ? Params : never
+
+function createInstance<T, ConstructType extends CommonConstructor<T>>(objectConstructor: ConstructType, ...params: ConstructorParametersType<ConstructType>) {
+  return new objectConstructor(...params)
+}
+
+createInstance(A, 's', 1) // 这里可以推断类构造函数的参数类型
+```
